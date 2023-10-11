@@ -159,7 +159,40 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def getValue(gameState, depth, agentIndex):
+            if depth >= self.depth or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState), None
+            elif agentIndex == 0:
+                return maximize(gameState, depth, 0)
+            else:
+                return minimize(gameState, depth, agentIndex)
+
+        def maximize(gameState, depth, agentIndex):
+            bestAction = None
+            bestScore = float('-inf')
+            for action in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, action)
+                score, _ = getValue(successor, depth, agentIndex+1)
+                if score > bestScore:
+                    bestScore = score
+                    bestAction = action
+            return bestScore, bestAction
+
+        def minimize(gameState, depth, agentIndex):
+            bestScore = float('inf')
+            for action in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, action)
+                if agentIndex == gameState.getNumAgents()-1:
+                    score, _ = getValue(successor, depth+1, 0)
+                else:
+                    score, _ = getValue(successor, depth, agentIndex+1)
+                if score < bestScore:
+                    bestScore = score
+            return bestScore, _
+
+        bestScore, bestAction = maximize(gameState, 0, 0)
+        return bestAction
+        
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
