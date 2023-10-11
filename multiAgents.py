@@ -204,8 +204,57 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+        def getValue(gameState, depth, agentIndex, alpha, beta):
+            if depth >= self.depth or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState)
+            elif agentIndex == 0:
+                return maximize(gameState, depth, alpha, beta)
+            else:
+                return minimize(gameState, depth, agentIndex, alpha, beta)
+            
+        def maximize(gameState, depth, alpha, beta):
+            bestScore = float('-inf')
+            bestAction = None
+            for action in gameState.getLegalActions(0):
+                successor = gameState.generateSuccessor(0, action)
+                score = getValue(successor, depth, 1, alpha, beta)
+                if score > bestScore:
+                    bestScore = score
+                if bestScore > beta:
+                    return bestScore
+                if bestScore > alpha:
+                    alpha = bestScore
+            return bestScore
 
-        util.raiseNotDefined()
+        def minimize(gameState, depth, agentIndex, alpha, beta):
+            bestScore = float('inf')
+            for action in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, action)
+                if agentIndex == gameState.getNumAgents()-1:
+                    score = getValue(successor, depth+1, 0, alpha, beta)
+                else:
+                    score = getValue(successor, depth, agentIndex+1, alpha, beta)
+                if score < bestScore:
+                    bestScore = score
+                if bestScore < alpha:
+                    return bestScore
+                if bestScore < beta:
+                    beta = bestScore
+            return bestScore
+        
+        bestScore = float('-inf')
+        alpha = float('-inf')
+        beta = float('inf')
+        bestAction = None
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            score = getValue(successor, 0, 1, alpha, beta)
+            if score > bestScore:
+                bestScore = score
+                bestAction = action
+            if bestScore > alpha:
+                alpha = bestScore
+        return bestAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -220,36 +269,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        def getValue(gameState, depth, agentIndex):
-            if depth >= self.depth or gameState.isWin() or gameState.isLose():
-                return self.evaluationFunction(gameState), None
-            elif agentIndex == 0:
-                return maximize(gameState, depth, 0)
-            else:
-                return minimize(gameState, depth, agentIndex)
-            
-        def maximize(gameState, agentIndex, depth, alpha, beta):
-            valuealue = float('-inf')
-            for action in gameState.getLegalActions(0):
-                successor = gameState.generateSuccessor(0, action)
-                value = max(value, minimize(successor, 1, depth, alpha, beta))
-                if value > beta:
-                    return value
-                alpha = max(alpha, value)
-
-        def minimize(gameState, agentIndex, depth, alpha, beta):
-            value = float('-inf')
-            for action in gameState.getLegalActions(agentIndex):
-                successor = gameState.generateSuccessor(agentIndex, action)
-                if agentIndex == gameState.getNumAgents()-1: # go to pacman
-                    value = min(value, maximize(successor, 0, depth+1, alpha, beta))
-                else:
-                    value = min(value, minimize(successor, agentIndex+1, depth, alpha, beta))
-                if value < alpha:
-                    return value
-                beta = min(beta, value)
-            return value
-        
         util.raiseNotDefined()
 
 def betterEvaluationFunction(currentGameState: GameState):
